@@ -1,161 +1,55 @@
-import React, { useState } from "react";
-import {
-  AccessibilityRole,
-  ImageProps,
-  ImageStyle,
-  StyleSheet,
-  TouchableOpacity,
-  View,
-  Text as RNText,
-} from "react-native";
-import {
-  ApplicationProvider,
-  Button,
-  Icon,
-  IconRegistry,
-  Layout,
-  Text,
-} from "@ui-kitten/components";
-import { EvaIconsPack } from "@ui-kitten/eva-icons";
-import { mapping, light, dark } from "@eva-design/eva";
+import React, { useState, useEffect } from "react"
+import { Text, View, TouchableOpacity } from "react-native"
+import { Camera } from "expo-camera"
 
-const heartIcons = ["😻", "💖", "😍", "🥰", "😍", "💝", "😘", "💓", "💕", "🐱"];
-const themes = {
-  light: {
-    theme: light,
-    icon: "sun",
-    text: "LIGHT",
-  },
-  dark: {
-    theme: dark,
-    icon: "moon",
-    text: "DARK",
-  },
-};
+export default function App() {
+  const [hasPermission, setHasPermission] = useState(null)
+  const [type, setType] = useState(Camera.Constants.Type.back)
 
-type IconProps = {
-  name: string;
-  style?: ImageStyle;
-};
+  useEffect(() => {
+    ;(async () => {
+      const { status } = await Camera.requestPermissionsAsync()
+      setHasPermission(status === "granted")
+    })()
+  }, [])
 
-type CustomButtonWithIconProps = {
-  accessibilityRole: AccessibilityRole;
-  accessibilityLabel: string;
-  icon: string;
-  iconStyle?: ImageStyle;
-  onPress: () => void;
-  text: string;
-  style: any;
-};
-
-const renderIcon = ({ name, style }: IconProps) => (
-  <Icon {...style} name={name} />
-);
-
-const CustomButtonWithIcon = ({
-  accessibilityRole,
-  accessibilityLabel,
-  icon,
-  iconStyle,
-  onPress,
-  text,
-  style,
-}: CustomButtonWithIconProps) => {
-  const ButtonIcon = () => renderIcon({ name: icon, style: iconStyle });
+  if (hasPermission === null) {
+    return <View />
+  }
+  if (hasPermission === false) {
+    return <Text>No access to camera</Text>
+  }
   return (
-    <Button
-      style={style}
-      icon={ButtonIcon}
-      onPress={onPress}
-      accessibilityRole={accessibilityRole}
-      accessibilityLabel={accessibilityLabel}
-    >
-      {text}
-    </Button>
-  );
-};
-
-const App = (): React.ReactFragment => {
-  const [icon, setIcon] = useState(heartIcons[0]);
-  const [themeName, setThemeName] = useState("light");
-  const theme = themes[themeName].theme;
-
-  const changeIcon = () => {
-    const index = Math.floor(Math.random() * heartIcons.length);
-    setIcon(heartIcons[index]);
-  };
-
-  const changeTheme = () => {
-    setThemeName(themeName === "light" ? "dark" : "light");
-  };
-
-  const { text: themeButtonText, icon: themeButtonIcon } =
-    themeName === "light" ? themes.dark : themes.light;
-
-  return (
-    <>
-      <IconRegistry icons={EvaIconsPack} />
-      <ApplicationProvider mapping={mapping} theme={theme}>
-        <Layout style={styles.container}>
-          <Text style={styles.text} category="h1">
-            Welcome to UI Kitten {icon}
-          </Text>
-          <Text style={styles.text} category="s1">
-            It works great in the browser and as a native app!
-          </Text>
-          <Text style={styles.text} appearance="hint">
-            Click some buttons to see it working.
-          </Text>
-          <Button
-            accessibilityRole="button"
-            accessibilityLabel="Change Icon"
-            style={styles.iconButton}
-            onPress={changeIcon}
-          >
-            CHANGE ICON
-          </Button>
-          <CustomButtonWithIcon
-            accessibilityRole="button"
-            accessibilityLabel="UI Kitten Change Theme"
-            style={styles.iconButton}
-            text={`SWITCH TO ${themeButtonText} THEME`}
-            icon={themeButtonIcon}
-            onPress={changeTheme}
-            iconStyle={{ tintColor: "white" }}
-          />
+    <View style={{ flex: 1 }}>
+      <Camera style={{ flex: 1 }} type={type}>
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: "transparent",
+            flexDirection: "row",
+          }}
+        >
           <TouchableOpacity
-            accessibilityRole="button"
-            accessibilityLabel="Native Change Theme"
-            onPress={changeTheme}
+            style={{
+              flex: 0.1,
+              alignSelf: "flex-end",
+              alignItems: "center",
+            }}
+            onPress={() => {
+              setType(
+                type === Camera.Constants.Type.back
+                  ? Camera.Constants.Type.front
+                  : Camera.Constants.Type.back
+              )
+            }}
           >
-            <View style={styles.nativeButton}>
-              <RNText>NATIVE CHANGE THEME</RNText>
-            </View>
+            <Text style={{ fontSize: 18, marginBottom: 10, color: "white" }}>
+              {" "}
+              Flip{" "}
+            </Text>
           </TouchableOpacity>
-        </Layout>
-      </ApplicationProvider>
-    </>
-  );
-};
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 10,
-  },
-  text: {
-    textAlign: "center",
-  },
-  iconButton: {
-    marginVertical: 16,
-  },
-  nativeButton: {
-    alignItems: "center",
-    backgroundColor: "#DDDDDD",
-    padding: 10,
-  },
-});
-
-export default App;
+        </View>
+      </Camera>
+    </View>
+  )
+}
