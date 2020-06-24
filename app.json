@@ -22,7 +22,12 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
-    }
+      "supportsTablet": true,
+      "bundleIdentifier": "com.alekseykozin.base"
+    },
+    "android": {
+      "package": "com.alekseykozin.base"
+    },
+    "entryPoint": "node_modules/expo/AppEntry.js"
   }
 }
